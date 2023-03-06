@@ -18,7 +18,7 @@ export default function NewTopicForm() {
       return;
     }
     console.log('evento',e)
-    const obj = {name: name, icon: icon}
+    const obj = {id: uuidv4(),name: name, icon: icon}
     // dispatch your add topic action here
     dispatch(addTopic(obj))
     history.push(ROUTES.topicsRoute());

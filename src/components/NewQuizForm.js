@@ -2,31 +2,53 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import ROUTES from "../app/routes";
+import { useSelector, useDispatch } from "react-redux";
+import { createQuiz } from '../features/quizzes/quizzesSlice';
+import { selectTopics } from '../features/topics/topicsSlice';
+import { addCard } from "../features/cards/cardsSlice";
 
 export default function NewQuizForm() {
   const [name, setName] = useState("");
   const [cards, setCards] = useState([]);
   const [topicId, setTopicId] = useState("");
   const history = useHistory();
-  const topics = {};
+  const topics = useSelector(selectTopics);
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name.length === 0) {
+    if (name.length === 0 || topicId.length === 0) {
       return;
     }
 
-    const cardIds = [];
+    let cardIds = [];
 
     // create the new cards here and add each card's id to cardIds
+    for (const card of cards) {
+      let newCard = {
+        id: uuidv4(),
+        front: card.front,
+        back: card.back,
+      }
+      dispatch(addCard(newCard));
+      cardIds.push(newCard.id);
+    }
+    
     // create the new quiz here
-
+    const newObjQuiz = {id: uuidv4(),
+                        name: name,
+                        topicId: topicId,
+                        cardIds: cardIds,
+                      }
+    dispatch(createQuiz(newObjQuiz))                  
     history.push(ROUTES.quizzesRoute());
   };
 
   const addCardInputs = (e) => {
     e.preventDefault();
     setCards(cards.concat({ front: "", back: "" }));
+    console.log('cards', cards)
+    
   };
 
   const removeCard = (e, index) => {
@@ -54,6 +76,7 @@ export default function NewQuizForm() {
           id="quiz-topic"
           onChange={(e) => setTopicId(e.currentTarget.value)}
           placeholder="Topic"
+          required
         >
           <option value="">Topic</option>
           {Object.values(topics).map((topic) => (
